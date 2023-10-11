@@ -4,15 +4,15 @@ import {formatAndNotify, getWorkflowRunStatus} from "./utils";
 try {
   // setTimeout to give time for GitHub API to show up the final conclusion
   setTimeout(async () => {
-    const showCardOnExit = getInput(`show-on-exit`).toLowerCase() === "true";
-    const showCardOnFailure = getInput(`show-on-failure`).toLowerCase() === "true";
+    const showCardOnExit = getInput("show-on-exit").toLowerCase() === "true";
+    const showCardOnFailure = getInput("show-on-failure").toLowerCase() === "true";
     const ignoreCancel = getInput("ignore-cancel").toLowerCase() === "true";
 
     const workflowRunStatus = await getWorkflowRunStatus();
-    info('Run conclusion: ' + workflowRunStatus.conclusion);
+    info("Run conclusion: " + workflowRunStatus.conclusion);
 
-    if (workflowRunStatus.conclusion === 'cancelled' && ignoreCancel) {
-      info('Configured to not show card upon job cancel.')
+    if (workflowRunStatus.conclusion === "cancelled" && ignoreCancel) {
+      info("Configured to not show card upon job cancel.")
     } else if (
       (showCardOnExit && !showCardOnFailure) ||
       (showCardOnFailure
@@ -30,9 +30,10 @@ try {
     }
   }, 2000);
 } catch (error) {
+  info("Error:")
   if (error instanceof Error) {
-    setFailed(error.message);
+    info(error.message);
   } else {
-    setFailed(<string>error);
+    info(<string>error);
   }
 }

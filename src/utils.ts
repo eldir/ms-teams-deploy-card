@@ -98,6 +98,7 @@ export async function getWorkflowRunStatus() {
 
   let lastStep;
   let jobStartDate;
+  let abort = false;
 
   /**
    * We have to verify all jobs steps. We don't know
@@ -113,23 +114,29 @@ export async function getWorkflowRunStatus() {
    * <success>, <cancelled>, <failure> and <skipped>
    */
   for(let job of workflowJobs.data.jobs) {
-    if (job.steps) {
-      for (let step of job.steps) {
-        // check if current step still running
-        if (step.completed_at !== null) {
-          lastStep = step;
-          jobStartDate = job.started_at;
-          // Some step/job has failed. Get out from here.
-          if (step.conclusion !== "success" && step.conclusion !== "skipped") {
-            break;
-          }
-          /**
-           * If nothing has failed, so we have a success scenario
-           * @note ignoring skipped cases.
-           */
-          lastStep.conclusion = "success";
+    if (!job.steps) {
+      continue;
+    }
+    for (let step of job.steps) {
+      // check if current step still running
+      if (step.completed_at !== null) {
+        lastStep = step;
+        jobStartDate = job.started_at;
+        // Some step/job has failed. Get out from here.
+        if (step.conclusion !== "success" && step.conclusion !== "skipped") {
+          abort = true;
+          break;
         }
+        /**
+         * If nothing has failed, so we have a success scenario
+         * @note ignoring skipped cases.
+         */
+        lastStep.conclusion = "success";
       }
+    }
+    if (abort) {
+      // breaking the outer loop as well
+      break;
     }
   }
   const startTime = moment(jobStartDate, moment.ISO_8601);
